@@ -175,6 +175,10 @@ public class SocketAdapterImpl implements SocketAdapter {
             this.errorEventHandler.accept(e.getMessage());
 
           }
+	
+	  if(bytesRead==-1){
+            break;
+          }
         }
     }
 
