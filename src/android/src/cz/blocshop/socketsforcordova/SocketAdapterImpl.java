@@ -46,6 +46,15 @@ public class SocketAdapterImpl implements SocketAdapter {
         this.executor = Executors.newSingleThreadExecutor();
     }
 
+    public boolean isConnected(){
+        try{
+           this.socket.sendUrgentData(0xFF);
+           return true;
+       }catch(Exception e){
+           return false;
+        }
+     }
+
     @Override
     public void open(final String host, final int port) {
         this.executor.submit(new Runnable() {
@@ -66,7 +75,15 @@ public class SocketAdapterImpl implements SocketAdapter {
     
     @Override
     public void write(byte[] data) throws IOException {
-        this.socket.getOutputStream().write(data);
+
+        if(this.isConnected()){
+            this.socket.getOutputStream().write(data);
+        }else{
+            this.close();
+            Logging.Error(SocketAdapterImpl.class.getName(), "remote closed", new IOException("remote closed"));
+            throw new IOException("remote closed");
+        }
+        
     }
 
     @Override
@@ -175,6 +192,20 @@ public class SocketAdapterImpl implements SocketAdapter {
             this.errorEventHandler.accept(e.getMessage());
 
           }
+
+          if(bytesRead==-1){
+              System.out.println("bytesRead -1 ");
+              invokeExceptionHandler("bytesRead -1 ");
+              break;
+          }
+
+
+          if(!isConnected()){
+            System.out.println(" remote  close -");
+            invokeExceptionHandler(" remote  close -");
+            break;
+          }
+
         }
     }
 
