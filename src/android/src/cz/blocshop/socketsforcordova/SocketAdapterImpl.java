@@ -158,16 +158,23 @@ public class SocketAdapterImpl implements SocketAdapter {
         }
     }    
     
-    private void runReadLoop() throws IOException {
+   private void runReadLoop() throws IOException {
         byte[] buffer = new byte[INPUT_STREAM_BUFFER_SIZE];
         int bytesRead = 0;
-        
-        while ((bytesRead = socket.getInputStream().read(buffer)) >= 0) {
-        	byte[] data = buffer.length == bytesRead 
-        			? buffer
-        			: Arrays.copyOfRange(buffer, 0, bytesRead);
-        	
-            this.invokeDataConsumer(data);
+
+        while(true){
+          try {
+            while ((bytesRead = socket.getInputStream().read(buffer)) >= 0) {
+              byte[] data = buffer.length == bytesRead
+                ? buffer
+                : Arrays.copyOfRange(buffer, 0, bytesRead);
+
+              this.invokeDataConsumer(data);
+            }
+          }catch (java.net.SocketTimeoutException e){
+            this.errorEventHandler.accept(e.getMessage());
+
+          }
         }
     }
 
